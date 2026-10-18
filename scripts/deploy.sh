@@ -71,6 +71,12 @@ if ! gcloud storage buckets describe "gs://$STATE_BUCKET" >/dev/null 2>&1; then
 fi
 
 echo "==> Applying Terraform"
+# Terraform reads Application Default Credentials, which Cloud Shell does not always have.
+# Fall back to the signed-in gcloud account's token (valid for an hour, enough for one apply).
+if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
+  GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)"
+  export GOOGLE_OAUTH_ACCESS_TOKEN
+fi
 terraform -chdir=terraform init -input=false -reconfigure \
   -backend-config="bucket=$STATE_BUCKET" -backend-config="prefix=$SERVICE"
 terraform -chdir=terraform apply -input=false
