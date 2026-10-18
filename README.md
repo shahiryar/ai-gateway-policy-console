@@ -34,7 +34,7 @@ The application registry is the only data the console stores. Anyone who can rea
 
 ## Deploy
 
-Run this from [Cloud Shell](https://shell.cloud.google.com) in the target project (it already has `gcloud`, Terraform and git), signed in as someone with Owner or equivalent on the project.
+Run this from [Cloud Shell](https://shell.cloud.google.com) in the target project (it already has `gcloud` and git; the deploy script installs Terraform if it is missing), signed in as someone with Owner or equivalent on the project.
 
 1. **Create the OAuth client.** In the Cloud console, open *Google Auth Platform*:
    - *Branding*: app name "AI Policy Console" and a support email.
