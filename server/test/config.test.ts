@@ -22,3 +22,14 @@ describe('loadConfig', () => {
     expect(c.projectId).toBe('demo-project');
   });
 });
+
+describe('allowed domains', () => {
+  it('accepts a comma-separated list and the single-domain variable', () => {
+    expect(loadConfig({ GOOGLE_API_MODE: 'mock', ALLOWED_DOMAINS: 'Acme.com, acme.co.uk' }).allowedDomains).toEqual([
+      'acme.com',
+      'acme.co.uk',
+    ]);
+    expect(loadConfig({ GOOGLE_API_MODE: 'mock', ALLOWED_DOMAIN: 'acme.com' }).allowedDomains).toEqual(['acme.com']);
+    expect(loadConfig({ GOOGLE_API_MODE: 'mock' }).allowedDomains).toEqual([]);
+  });
+});

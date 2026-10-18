@@ -167,8 +167,8 @@ resource "google_cloud_run_v2_service" "console" {
         value = var.oauth_client_id
       }
       env {
-        name  = "ALLOWED_DOMAIN"
-        value = var.allowed_domain
+        name  = "ALLOWED_DOMAINS"
+        value = join(",", distinct(compact(concat(var.allowed_domains, [var.allowed_domain]))))
       }
       env {
         name  = "FIRESTORE_DATABASE_ID"

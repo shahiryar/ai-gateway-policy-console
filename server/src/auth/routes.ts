@@ -34,7 +34,8 @@ export function registerAuthRoutes(app: FastifyInstance, config: Config) {
       code_challenge: codeChallenge,
       code_challenge_method: CodeChallengeMethod.S256,
       ...(request.iapEmail ? { login_hint: request.iapEmail } : {}),
-      ...(config.allowedDomain ? { hd: config.allowedDomain } : {}),
+      // Google's account picker can only be narrowed to a single domain.
+      ...(config.allowedDomains.length === 1 ? { hd: config.allowedDomains[0] } : {}),
     });
     return reply.redirect(url);
   });
@@ -62,8 +63,11 @@ export function registerAuthRoutes(app: FastifyInstance, config: Config) {
     if (!payload?.email || !payload.email_verified) {
       return reply.code(403).type('text/plain').send('Your Google account email is not verified.');
     }
-    if (config.allowedDomain && payload.hd !== config.allowedDomain) {
-      return reply.code(403).type('text/plain').send(`Only ${config.allowedDomain} accounts can use this console.`);
+    if (config.allowedDomains.length && !config.allowedDomains.includes(payload.hd?.toLowerCase() ?? '')) {
+      return reply
+        .code(403)
+        .type('text/plain')
+        .send(`Only accounts from ${config.allowedDomains.join(', ')} can use this console.`);
     }
     if (request.iapEmail && request.iapEmail.toLowerCase() !== payload.email.toLowerCase()) {
       return reply

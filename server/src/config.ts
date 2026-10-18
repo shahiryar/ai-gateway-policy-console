@@ -14,7 +14,8 @@ export interface Config {
   oauthClientSecret?: string;
   sessionKey: Buffer;
   iapAudience?: string;
-  allowedDomain?: string;
+  /** Google Workspace / Cloud Identity domains allowed to sign in; empty allows any. */
+  allowedDomains: string[];
   publicUrl?: string;
   devAccessToken?: string;
   devUserEmail: string;
@@ -72,7 +73,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     oauthClientSecret: env.OAUTH_CLIENT_SECRET,
     sessionKey,
     iapAudience: env.IAP_AUDIENCE || undefined,
-    allowedDomain: env.ALLOWED_DOMAIN || undefined,
+    allowedDomains: list(env.ALLOWED_DOMAINS || env.ALLOWED_DOMAIN, []).map((d) => d.toLowerCase()),
     publicUrl: env.PUBLIC_URL?.replace(/\/$/, '') || undefined,
     devAccessToken: env.DEV_ACCESS_TOKEN || undefined,
     devUserEmail: env.DEV_USER_EMAIL ?? 'developer@localhost',

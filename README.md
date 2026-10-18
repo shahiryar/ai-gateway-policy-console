@@ -77,7 +77,7 @@ All of them also get *IAP-secured Web App User* on the service. The runtime serv
 | `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` | OAuth web client |
 | `SESSION_KEY` | 64 hex characters; encrypts the session cookie |
 | `IAP_AUDIENCE` | Turns on IAP header verification (`/projects/NUMBER/locations/REGION/services/NAME`) |
-| `ALLOWED_DOMAIN` | Optional Workspace domain restriction |
+| `ALLOWED_DOMAINS` | Optional comma-separated list of Workspace domains allowed to sign in |
 | `FIRESTORE_DATABASE_ID` | Registry database (default `(default)`; Terraform uses `policy-console`) |
 | `STORE` | `firestore` (default) or `memory` |
 | `GOOGLE_API_MODE` | `live` (default) or `mock` for a self-contained demo |

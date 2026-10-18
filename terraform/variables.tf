@@ -32,8 +32,14 @@ variable "oauth_client_secret" {
   sensitive   = true
 }
 
+variable "allowed_domains" {
+  description = "Optional Google Workspace / Cloud Identity domains that may sign in, for example [\"example.com\", \"example.co.uk\"]. Empty allows any account that IAP lets in."
+  type        = list(string)
+  default     = []
+}
+
 variable "allowed_domain" {
-  description = "Optional Google Workspace / Cloud Identity domain that may sign in, for example example.com."
+  description = "Single-domain form of allowed_domains, kept for existing tfvars files."
   type        = string
   default     = ""
 }

@@ -2,7 +2,7 @@ project_id          = "acme-ai-prod"
 region              = "us-central1"
 oauth_client_id     = "1234567890-abc.apps.googleusercontent.com"
 oauth_client_secret = "GOCSPX-..."
-allowed_domain      = "acme.com"
+allowed_domains     = ["acme.com", "acme.co.uk"]
 
 model_armor_locations = ["us-central1", "europe-west4"]
 
