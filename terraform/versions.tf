@@ -1,6 +1,9 @@
 terraform {
   required_version = ">= 1.5"
 
+  # Configured at init time; scripts/deploy.sh passes the bucket and prefix.
+  backend "gcs" {}
+
   required_providers {
     google = {
       source  = "hashicorp/google"
