@@ -31,9 +31,26 @@ if [[ -z "$PROJECT_ID" ]]; then
   exit 1
 fi
 
-for tool in gcloud terraform; do
-  command -v "$tool" >/dev/null || { echo "$tool is not installed." >&2; exit 1; }
-done
+command -v gcloud >/dev/null || { echo "gcloud is not installed." >&2; exit 1; }
+
+# Cloud Shell ships a `terraform` placeholder that only prints install instructions,
+# so check for a working binary and install one into ~/bin when needed.
+TF_VERSION="${TF_VERSION:-1.9.8}"
+if ! terraform version 2>/dev/null | grep -q '^Terraform v'; then
+  echo "==> Installing Terraform $TF_VERSION into ~/bin"
+  case "$(uname -m)" in
+    x86_64) TF_ARCH=amd64 ;;
+    aarch64 | arm64) TF_ARCH=arm64 ;;
+    *) echo "Unsupported CPU $(uname -m); install Terraform manually." >&2; exit 1 ;;
+  esac
+  mkdir -p "$HOME/bin"
+  TMP_ZIP="$(mktemp)"
+  curl -fsSL -o "$TMP_ZIP" "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_${TF_ARCH}.zip"
+  unzip -o -q "$TMP_ZIP" terraform -d "$HOME/bin"
+  rm -f "$TMP_ZIP"
+  export PATH="$HOME/bin:$PATH"
+  terraform version | grep -q '^Terraform v' || { echo "Terraform install failed." >&2; exit 1; }
+fi
 
 echo "==> Project $PROJECT_ID, region $REGION, service $SERVICE"
 gcloud config set project "$PROJECT_ID" >/dev/null
@@ -59,6 +76,10 @@ terraform -chdir=terraform init -input=false -reconfigure \
 terraform -chdir=terraform apply -input=false
 
 IMAGE_REPO="$(terraform -chdir=terraform output -raw image_repository)"
+if [[ "$IMAGE_REPO" != *-docker.pkg.dev/* ]]; then
+  echo "Terraform did not report the image repository; check the apply output above." >&2
+  exit 1
+fi
 TAG="$(git rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M%S)"
 IMAGE="$IMAGE_REPO/console:$TAG"
 
