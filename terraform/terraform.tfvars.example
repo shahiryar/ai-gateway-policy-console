@@ -1,0 +1,12 @@
+project_id          = "acme-ai-prod"
+region              = "us-central1"
+oauth_client_id     = "1234567890-abc.apps.googleusercontent.com"
+oauth_client_secret = "GOCSPX-..."
+allowed_domain      = "acme.com"
+
+model_armor_locations = ["us-central1", "europe-west4"]
+
+policy_admins = ["group:ai-security@acme.com"]
+app_owners    = ["group:ai-app-teams@acme.com"]
+viewers       = ["group:risk-and-compliance@acme.com"]
+iap_members   = ["group:ai-platform@acme.com"]

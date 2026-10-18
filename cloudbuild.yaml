@@ -1,0 +1,34 @@
+# Builds the container and rolls it out to the Cloud Run service created by Terraform.
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_REGION=us-central1,_SERVICE=ai-policy-console,_REPOSITORY=ai-policy-console
+substitutions:
+  _REGION: us-central1
+  _SERVICE: ai-policy-console
+  _REPOSITORY: ai-policy-console
+  _TAG: latest
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/console:${_TAG}', '.']
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/console:${_TAG}']
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - services
+      - update
+      - ${_SERVICE}
+      - --region=${_REGION}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/console:${_TAG}
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/console:${_TAG}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
