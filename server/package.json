@@ -1,0 +1,28 @@
+{
+  "name": "@console/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@fastify/secure-session": "^8.3.0",
+    "@fastify/static": "^10.1.6",
+    "@google-cloud/firestore": "^9.3.1",
+    "fastify": "^5.6.0",
+    "google-auth-library": "^10.1.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.0"
+  }
+}
