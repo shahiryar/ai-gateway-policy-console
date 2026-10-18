@@ -34,29 +34,29 @@ The application registry is the only data the console stores. Anyone who can rea
 
 ## Deploy
 
-You need `gcloud`, Terraform 1.5+, and Owner (or equivalent) on the target project.
+Run this from [Cloud Shell](https://shell.cloud.google.com) in the target project (it already has `gcloud`, Terraform and git), signed in as someone with Owner or equivalent on the project.
 
-1. **Create the OAuth client.** In the Cloud console, open *Google Auth Platform*. Set the audience to **Internal** (no Google verification needed), then create a **Web application** client. You will add the redirect URI after step 3.
-2. **Configure Terraform.**
+1. **Create the OAuth client.** In the Cloud console, open *Google Auth Platform*:
+   - *Branding*: app name "AI Policy Console" and a support email.
+   - *Audience*: **Internal**, so only accounts in the client's organization can sign in and Google verification is not needed.
+   - *Clients* > *Create client* > **Web application**. Under *Authorized redirect URIs* add
+     `https://ai-policy-console-PROJECT_NUMBER.REGION.run.app/auth/callback`
+     (the deploy script prints the exact value). Keep the client ID and secret.
+2. **Get the code and fill in the settings.**
    ```bash
-   cd terraform
-   cp terraform.tfvars.example terraform.tfvars   # fill in project, OAuth client, groups
+   git clone https://github.com/shahiryar/ai-gateway-policy-console.git
+   cd ai-gateway-policy-console
+   cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+   nano terraform/terraform.tfvars   # project, region, OAuth client, Google groups per persona
    ```
-   `policy_admins`, `app_owners` and `viewers` get the IAM roles for each persona and access through IAP. `iap_members` only gets access to the console. Keep Terraform state in a protected bucket, since it contains the OAuth client secret.
-3. **Apply.**
+3. **Deploy.**
    ```bash
-   terraform init
-   terraform apply
+   ./scripts/deploy.sh
    ```
-   The first apply deploys a placeholder image.
-4. **Add the redirect URI.** Copy the `oauth_redirect_uri` output into the OAuth client's *Authorized redirect URIs*.
-5. **Build and roll out the console.**
-   ```bash
-   cd ..
-   gcloud builds submit --config cloudbuild.yaml \
-     --substitutions=_REGION=us-central1,_SERVICE=ai-policy-console,_REPOSITORY=ai-policy-console
-   ```
-6. Open `service_url`. IAP signs you in, then the console asks for consent to call Google Cloud APIs on your behalf.
+   The script enables the bootstrap APIs, creates a versioned bucket for Terraform state (`PROJECT_ID-tfstate`), applies Terraform (APIs, Artifact Registry, service account, Firestore, secrets, Cloud Run with IAP, IAM), builds the image with Cloud Build, and rolls it out. Re-run it to ship updates.
+4. Open the URL it prints. IAP signs you in, then the console asks for consent to call Google Cloud APIs on your behalf.
+
+`policy_admins`, `app_owners` and `viewers` in the tfvars get the IAM roles for each persona and access through IAP; `iap_members` only gets access to the console. Terraform state holds the OAuth client secret, which is why the state bucket is private and versioned.
 
 ### IAM by persona
 
