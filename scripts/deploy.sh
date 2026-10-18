@@ -71,12 +71,15 @@ if ! gcloud storage buckets describe "gs://$STATE_BUCKET" >/dev/null 2>&1; then
 fi
 
 echo "==> Applying Terraform"
-# Terraform reads Application Default Credentials, which Cloud Shell does not always have.
-# Fall back to the signed-in gcloud account's token (valid for an hour, enough for one apply).
-if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
-  GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)"
-  export GOOGLE_OAUTH_ACCESS_TOKEN
+# Cloud Shell's metadata credentials are unreliable for Terraform, so always hand it
+# the signed-in gcloud account's token (valid for an hour, enough for one apply).
+# The GCS backend and the google provider both read GOOGLE_OAUTH_ACCESS_TOKEN.
+GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token 2>/dev/null || true)"
+if [[ -z "$GOOGLE_OAUTH_ACCESS_TOKEN" ]]; then
+  echo "gcloud is not signed in. Run: gcloud auth login" >&2
+  exit 1
 fi
+export GOOGLE_OAUTH_ACCESS_TOKEN
 terraform -chdir=terraform init -input=false -reconfigure \
   -backend-config="bucket=$STATE_BUCKET" -backend-config="prefix=$SERVICE"
 terraform -chdir=terraform apply -input=false
